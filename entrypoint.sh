@@ -39,4 +39,4 @@ lighttpd -f /etc/lighttpd/lighttpd.conf
 # Hang on a bit while the server starts
 sleep 5
 
-tail -f /var/log/lighttpd/*.log
+# tail -f /var/log/lighttpd/*.log
