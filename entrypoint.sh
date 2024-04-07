@@ -14,7 +14,9 @@ if ! id -u "${USERNAME}" >/dev/null 2>&1; then
 	adduser -G ${GROUP} -D -H -u ${USER_UID:=2222} ${USERNAME}
 fi
 
-chown webdav /var/log/lighttpd
+touch /var/log/lighttpd/access.log
+touch /var/log/lighttpd/error.log
+chown -R webdav /var/log/lighttpd
 
 if [ -n "$WHITELIST" ]; then
 	sed -i "s/WHITELIST/${WHITELIST}/" /etc/lighttpd/webdav.conf
@@ -36,7 +38,7 @@ fi
 
 lighttpd -f /etc/lighttpd/lighttpd.conf
 
-# Hang on a bit while the server starts
-sleep 5
+## Hang on a bit while the server starts
+#sleep 5
 
-# tail -f /var/log/lighttpd/*.log
+tail -f /var/log/lighttpd/*.log
