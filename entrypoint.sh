@@ -8,6 +8,8 @@ GROUP=webdav
 # Only allow read access by default
 READWRITE=${READWRITE:=false}
 
+deluser guest
+delgroup users
 # Add user if it does not exist
 if ! id -u "${USERNAME}" >/dev/null 2>&1; then
 	addgroup -g ${USER_GID:=2222} ${GROUP}

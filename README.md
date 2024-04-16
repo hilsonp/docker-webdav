@@ -1,8 +1,11 @@
-[![](https://images.microbadger.com/badges/image/jgeusebroek/webdav.svg)](https://microbadger.com/images/jgeusebroek/webdav "Get your own image badge on microbadger.com")
-# Docker WebDAV image
+# Docker WebDAV image with propfind-depth-infinity mode enabled
 
 A tiny image running [gliderlabs/docker-alpine](https://github.com/gliderlabs/docker-alpine) Linux and [Lighttpd](https://www.lighttpd.net/).
 
+## Credits
+This image is based on jgeusebroek/webdav. Most credits goes to him !
+At the time of writing, it did not have the propfind-depth-infinity enabled which I needed.
+As I wanted to train myself on an image creation, I forked and updated my own version.
 ## Usage
 
 	docker run --restart=always -d
@@ -10,14 +13,20 @@ A tiny image running [gliderlabs/docker-alpine](https://github.com/gliderlabs/do
 		--hostname=webdav \
 		--name=webdav \
 		-v /<host_directory_to_share>:/webdav \
-		jgeusebroek/webdav
+		hilsonp/webdav-infinity
 
 By default the WebDAV server is password protected with user `webdav` and password `vadbew` which obviously isn't really secure.
 This can easily be overwritten, by creating a `config directory` on the host with an *htpasswd* file and mounting this as a volume on `/config`.
 
 	-v /<host_config_directory>:/config
 
-You could use an online htpasswd generator like [https://www.transip.nl/htpasswd/](https://www.transip.nl/htpasswd/) to create the password hashes when you don't have a machine with the `htpasswd` package. (**Hint**: The package is `apache2-utils`)
+You can generate the htpasswd hash with this command line once the container is running:
+    sudo docker exec -it e52512aef8c8 htpasswd -n myusername
+    New password: \****
+    Re-type new password: \****
+    myusername:$apr1$vQglWPMm$FsYZpdyC6r3AwH/Zf9X9V0
+
+Then simply copy this line into a htpasswd file in the config directory and restart the container.
 
 You can also provide a list of IP's in the form of a regular expression which are then whitelisted. See below.
 
@@ -30,10 +39,30 @@ You can also provide a list of IP's in the form of a regular expression which ar
 
 **IMPORTANT**: Should you use a persistent config volume, the WHITELIST and READWRITE variables will only have effect the first time. I.e., when you don't have a (custom) configuration yet.
 
+## Docker Compose file
+```
+version: "3.8"
+services:
+  webdav-infinity:
+    container_name: webdav-infinity
+    image: hilsonp/webdav-infinity
+    restart: unless-stopped
+    ports:
+      - 5005:80 # This makes the container listen on port 5005
+    environment:
+      - USER_UID=${DOCKER_UID}
+      - USER_GID=${DOCKER_GID}
+      - TZ=${DOCKER_TZ}
+      - READWRITE=true
+    volumes:
+      - ./webdav/data:/webdav
+      - ./webdav/config:/config
+networks: {}
+```
 ## License
 
 MIT / BSD
 
 ## Author Information
 
-[Jeroen Geusebroek](http://jeroengeusebroek.nl/)
+Pierre Hilson based on work of [Jeroen Geusebroek](http://jeroengeusebroek.nl/)
